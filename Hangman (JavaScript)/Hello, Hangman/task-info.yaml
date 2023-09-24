@@ -35,17 +35,8 @@ files:
     learner_created: false
 feedback_link: https://hyperskill.org/learn/step/20572#comment
 check_profile: hyperskill_node_javascript
-status: Failed
+status: Solved
 feedback:
-  message: |-
-    Wrong answer in test #1
-
-    Please, print the output exactly like it is given in the example.
-
-    Please find below the output of your program during this failed test.
-
-    ---
-
-    Hello, World!
-  time: "Sun, 24 Sep 2023 08:02:08 UTC"
-record: -1
+  message: <html>Correct solution</html>
+  time: "Sun, 24 Sep 2023 08:08:12 UTC"
+record: 1

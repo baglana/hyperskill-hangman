@@ -3,4 +3,9 @@
 // You will need this in the following stages
 const input = require('sync-input')
 
-console.log("Hello, World!")
+greet();
+
+function greet() {
+  console.log("H A N G M A N");
+  console.log("The game will be available soon.");
+}
