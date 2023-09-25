@@ -1,4 +1,5 @@
 from hstest import StageTest, dynamic_test, TestedProgram, WrongAnswer, CheckResult
+from random import shuffle
 
 
 class Config:
@@ -8,73 +9,101 @@ class Config:
     @staticmethod
     def correct_inputs():
         return [
+            'java',
             'python',
+            'swift',
+            'javascript',
         ]
 
     @staticmethod
     def incorrect_inputs():
         return [
-            'java',
-            'pyton',
-            'javascript'
+            'kotlin',
+            'php',
+            'haskell',
+            'typescript',
         ]
 
     @classmethod
-    def all_inputs(cls):
-        return cls.correct_inputs() + cls.incorrect_inputs()
+    def shuffled_correct_inputs(cls):
+        inputs = cls.correct_inputs() * 25
+        shuffle(inputs)
+
+        return inputs
 
 
 class HangmanTest(StageTest):
 
-    @dynamic_test(data=Config.correct_inputs())
-    def test_should_print_survived_message(self, guessed_word):
+    def __init__(self, source_name: str = ''):
+        super().__init__(source_name)
+        self.survived_history = {language: False for language in Config.correct_inputs()}
+        self.hanged_history = {language: False for language in Config.correct_inputs()}
+
+    @dynamic_test(order=1, data=Config.incorrect_inputs())
+    def test_should_print_hanged_message(self, guessed_language):
+        hanged_message = Config.HANGED_MESSAGE
         survived_message = Config.SURVIVED_MESSAGE
 
         pr = TestedProgram(self.source_name)
         pr.start()
-        output = pr.execute(guessed_word).strip().lower()
+        output = pr.execute(guessed_language).strip().lower()
         has_survived_message = survived_message.lower() in output
-
-        if not has_survived_message:
-            raise WrongAnswer(f'It looks like your output is wrong.\n'
-                              f'Input: {guessed_word}\n'
-                              f'Correct output: {survived_message}')
-
-        return CheckResult.correct()
-
-    @dynamic_test(data=Config.incorrect_inputs())
-    def test_should_print_hanged_message(self, guessed_word):
-        hanged_message = Config.HANGED_MESSAGE
-
-        pr = TestedProgram(self.source_name)
-        pr.start()
-        output = pr.execute(guessed_word).strip().lower()
         has_hanged_message = hanged_message.lower() in output
+
+        if has_survived_message:
+            raise WrongAnswer(f'It looks like your output is wrong.\n'
+                              f'Input: {guessed_language}\n'
+                              f'Correct output: {hanged_message}')
 
         if not has_hanged_message:
             raise WrongAnswer(f'It looks like your output is wrong.\n'
-                              f'Input: {guessed_word}\n'
+                              f'Input: {guessed_language}\n'
                               f'Correct output: {hanged_message}')
 
         return CheckResult.correct()
 
-    @dynamic_test(data=Config.all_inputs())
-    def test_should_not_print_both_messages(self, guessed_word):
-        survived_message = Config.SURVIVED_MESSAGE
+    @dynamic_test(order=2, data=Config.shuffled_correct_inputs())
+    def test_verify_all_languages_from_description(self, guessed_language):
         hanged_message = Config.HANGED_MESSAGE
+        survived_message = Config.SURVIVED_MESSAGE
 
         pr = TestedProgram(self.source_name)
         pr.start()
-        output = pr.execute(guessed_word).strip().lower()
-
+        output = pr.execute(guessed_language).strip().lower()
         has_survived_message = survived_message.lower() in output
         has_hanged_message = hanged_message.lower() in output
 
         if has_survived_message and has_hanged_message:
-            raise WrongAnswer(f'It looks like your output contains both \"{survived_message}\" and \"{hanged_message}\".\n'
-                              f'Please, output only one of them.')
+            raise WrongAnswer(f'It looks like your output contains both \"{survived_message}\"'
+                              f' and \"{hanged_message}\". Please, output only one of them.')
+
+        if not (has_survived_message or has_hanged_message):
+            raise WrongAnswer(f'It looks like your output contains neither \"{survived_message}\"'
+                              f' nor \"{hanged_message}\". Please, output one of them.')
+
+        if has_survived_message:
+            self.survived_history[guessed_language] = True
+
+        if has_hanged_message:
+            self.hanged_history[guessed_language] = True
 
         return CheckResult.correct()
+
+    @dynamic_test(order=3)
+    def test_all_languages_from_description_should_be_guessed_at_least_once(self):
+        if all(self.survived_history.values()):
+            return CheckResult.correct()
+
+        raise WrongAnswer("It looks like your program is not using "
+                          "all of the words to guess from the list in the description.")
+
+    @dynamic_test(order=4)
+    def test_all_languages_from_description_should_be_incorrect_at_least_once(self):
+        if all(self.hanged_history.values()):
+            return CheckResult.correct()
+
+        raise WrongAnswer("It looks like every word from the list in the description is"
+                          " always considered as guessed.")
 
 
 if __name__ == '__main__':
