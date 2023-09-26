@@ -13,12 +13,19 @@ function getRandomWord() {
 }
 
 function playGame(guessedWord) {
-  const playerGuess = input('Guess the word: ');
+  const maskedWord = getMaskedWord(guessedWord);
+  const playerGuess = input(`Guess the word ${maskedWord}: `);
   if (playerGuess === guessedWord) {
     showWinMessage();
   } else  {
     showLostMessage();
   }
+}
+
+function getMaskedWord(word) {
+  const letters = [...word];
+  letters.fill('-', 3);
+  return ''.concat(...letters);
 }
 
 function showWinMessage() {

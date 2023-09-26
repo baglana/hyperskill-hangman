@@ -37,7 +37,6 @@ class HangmanTest(StageTest):
     def __init__(self, source_name: str = ''):
         super().__init__(source_name)
         self.survived_history = {language: False for language in Config.correct_inputs()}
-        self.hanged_history = {language: False for language in Config.correct_inputs()}
 
     @dynamic_test(order=1, data=Config.incorrect_inputs())
     def test_should_print_hanged_message(self, guessed_language):
@@ -64,11 +63,14 @@ class HangmanTest(StageTest):
 
     @dynamic_test(order=2, data=Config.shuffled_correct_inputs())
     def test_verify_all_languages_from_description(self, guessed_language):
+        if self._all_languages_from_description_was_guessed_at_least_once():
+            return CheckResult.correct()
+
         hanged_message = Config.HANGED_MESSAGE
         survived_message = Config.SURVIVED_MESSAGE
 
         pr = TestedProgram(self.source_name)
-        pr.start()
+        reply = pr.start()
         output = pr.execute(guessed_language).strip().lower()
         has_survived_message = survived_message.lower() in output
         has_hanged_message = hanged_message.lower() in output
@@ -81,29 +83,37 @@ class HangmanTest(StageTest):
             raise WrongAnswer(f'It looks like your output contains neither \"{survived_message}\"'
                               f' nor \"{hanged_message}\". Please, output one of them.')
 
-        if has_survived_message:
-            self.survived_history[guessed_language] = True
-
         if has_hanged_message:
-            self.hanged_history[guessed_language] = True
+            return CheckResult.correct()
+
+        self.survived_history[guessed_language] = True
+        guessed_language_hint = self._make_word_hint(guessed_language)
+
+        if guessed_language_hint not in reply:
+            raise WrongAnswer(f'The program guessed the word \"{guessed_language}\" '
+                              f'and should output clue \"{guessed_language_hint}\" '
+                              f'but this line is not in the output.')
 
         return CheckResult.correct()
 
     @dynamic_test(order=3)
     def test_all_languages_from_description_should_be_guessed_at_least_once(self):
-        if all(self.survived_history.values()):
+        if self._all_languages_from_description_was_guessed_at_least_once():
             return CheckResult.correct()
 
         raise WrongAnswer("It looks like your program is not using "
                           "all of the words to guess from the list in the description.")
 
-    @dynamic_test(order=4)
-    def test_all_languages_from_description_should_be_incorrect_at_least_once(self):
-        if all(self.hanged_history.values()):
-            return CheckResult.correct()
+    def _all_languages_from_description_was_guessed_at_least_once(self):
+        return all(self.survived_history.values())
 
-        raise WrongAnswer("It looks like every word from the list in the description is"
-                          " always considered as guessed.")
+    @classmethod
+    def _make_word_hint(cls, word: str):
+
+        if len(word) < 3:
+            return word
+
+        return word[:3] + '-' * len(word[3:])
 
 
 if __name__ == '__main__':
