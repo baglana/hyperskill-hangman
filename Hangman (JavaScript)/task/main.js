@@ -13,7 +13,7 @@ function getRandomWord() {
 }
 
 function playGame(guessedWord) {
-  const maskedWord = getMaskedWord(guessedWord);
+  const maskedWord = getMasked(guessedWord);
   const playerGuess = input(`Guess the word ${maskedWord}: `);
   if (playerGuess === guessedWord) {
     showWinMessage();
@@ -22,7 +22,7 @@ function playGame(guessedWord) {
   }
 }
 
-function getMaskedWord(word) {
+function getMasked(word) {
   const letters = [...word];
   letters.fill('-', 3);
   return ''.concat(...letters);
