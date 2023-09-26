@@ -13,30 +13,44 @@ function getRandomWord() {
 }
 
 function playGame(guessedWord) {
-  const maskedWord = getMasked(guessedWord);
-  const playerGuess = input(`Guess the word ${maskedWord}: `);
-  if (playerGuess === guessedWord) {
-    showWinMessage();
-  } else  {
-    showLostMessage();
+  let attempts = 8;
+  let maskedWord = getMasked(guessedWord);
+
+  while (attempts > 0) {
+    console.log(`\n${maskedWord}`);
+    const enteredLetter = input(`Input a letter: `);
+
+    if (!(guessedWord.includes(enteredLetter))){
+      console.log('That letter doesn\'t appear in the word.');
+      attempts--;
+
+    } else {
+      maskedWord = getRevealed(
+        enteredLetter, maskedWord, guessedWord
+      );
+    }
   }
+  showFinalMessage();
+}
+
+function getRevealed(letter, maskedWord, guessedWord) {
+  revealedWord = [...maskedWord];
+  revealedWord.forEach((l, i) => {
+    if (guessedWord.charAt(i) === letter) {
+      revealedWord[i] = letter;
+    }
+  });
+  return ''.concat(...revealedWord);
 }
 
 function getMasked(word) {
-  const letters = [...word];
-  letters.fill('-', 3);
-  return ''.concat(...letters);
+  return '-'.repeat(word.length);
 }
 
-function showWinMessage() {
-  console.log('You survived!');
-}
-
-function showLostMessage() {
-  console.log('You lost!');
+function showFinalMessage() {
+  console.log('\nThanks for playing!');
 }
 
 function greet() {
   console.log('H A N G M A N');
-  console.log('The game will be available soon.');
 }
