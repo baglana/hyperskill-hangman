@@ -15,11 +15,19 @@ function getRandomWord() {
 function playGame(guessedWord) {
   let attempts = 8;
   const hint = getMasked(guessedWord);
+  const suggestedLetters = [];
 
   while (attempts > 0) {
 
     showHint(hint);
-    const enteredLetter = input(`Input a letter: `);
+    const userInput = input(`Input a letter: `);
+
+    const userInputIsValid = validateUserInput(
+      userInput, suggestedLetters
+    );
+    if (!userInputIsValid) continue;
+
+    const enteredLetter = userInput;
 
     if (guessedWord.includes(enteredLetter)) {
 
@@ -39,8 +47,7 @@ function playGame(guessedWord) {
 
     const wordIsUncovered = !hint.includes('-');
     if (wordIsUncovered) {
-      showHint(hint);
-      showWinMessage();
+      showWinMessage(guessedWord);
       break;
     }
 
@@ -48,6 +55,27 @@ function playGame(guessedWord) {
   if (!attempts) {
     showLostMessage();
   }
+}
+
+function validateUserInput(input, suggestedLetters) {
+  if (input.length !== 1) {
+    console.log('Please, input a single letter.');
+    return false;
+  }
+
+  const lowerEnglish = /[a-z]/;
+  if (!(lowerEnglish.test(input))) {
+    console.log('Please, enter a lowercase letter from the English alphabet.');
+    return false;
+  }
+
+  if (suggestedLetters.includes(input)) {
+    console.log('You\'ve already guessed this letter.');
+    return false;
+  }
+
+  suggestedLetters.push(input);
+  return true;
 }
 
 function showHint(hint) {
@@ -70,8 +98,8 @@ function getMasked(word) {
   return new Array(word.length).fill('-');
 }
 
-function showWinMessage() {
-  console.log('You guessed the word!');
+function showWinMessage(word) {
+  console.log(`You guessed the word ${word}!`)
   console.log('You survived!');
 }
 
