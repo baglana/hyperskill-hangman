@@ -14,40 +14,44 @@ function getRandomWord() {
 
 function playGame(guessedWord) {
   let attempts = 8;
-  let hint = getMasked(guessedWord);
+  const hint = getMasked(guessedWord);
 
   while (attempts > 0) {
-    console.log(`\n${hint}`);
+
+    showHint(hint);
     const enteredLetter = input(`Input a letter: `);
     attempts--;
     
-    if (!(guessedWord.includes(enteredLetter))){
-      console.log('That letter doesn\'t appear in the word.');
-      
-    } else {
-      hint = getUncovered(
+    if (guessedWord.includes(enteredLetter)){
+      uncoverLetter(
         enteredLetter, hint, guessedWord
       );
+    } else {
+      console.log('That letter doesn\'t appear in the word.');
     }
+
   }
   showFinalMessage();
 }
 
-function getUncovered(letter, hint, guessedWord) {
-  let pos = guessedWord.indexOf(letter);
-  while (pos !== -1) {
-    hint = getReplacedAt(pos, letter, hint);
-    pos = guessedWord.indexOf(letter, pos + 1);
-  }
-  return hint;
+function showHint(hint) {
+  console.log(`\n${hint.join('')}`);
 }
 
-function getReplacedAt(i, letter, word) {
-  return word.slice(0, i) + letter + word.slice(i + 1);
+function uncoverLetter(letter, hint, guessedWord) {
+  let pos = guessedWord.indexOf(letter);
+  while (pos !== -1) {
+    replaceAt(pos, letter, hint);
+    pos = guessedWord.indexOf(letter, pos + 1);
+  }
+}
+
+function replaceAt(i, letter, word) {
+  word[i] = letter;
 }
 
 function getMasked(word) {
-  return '-'.repeat(word.length);
+  return new Array(word.length).fill('-');
 }
 
 function showFinalMessage() {
