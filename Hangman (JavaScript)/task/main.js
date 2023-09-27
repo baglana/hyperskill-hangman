@@ -14,33 +14,36 @@ function getRandomWord() {
 
 function playGame(guessedWord) {
   let attempts = 8;
-  let maskedWord = getMasked(guessedWord);
+  let hint = getMasked(guessedWord);
 
   while (attempts > 0) {
-    console.log(`\n${maskedWord}`);
+    console.log(`\n${hint}`);
     const enteredLetter = input(`Input a letter: `);
-
+    attempts--;
+    
     if (!(guessedWord.includes(enteredLetter))){
       console.log('That letter doesn\'t appear in the word.');
-      attempts--;
-
+      
     } else {
-      maskedWord = getRevealed(
-        enteredLetter, maskedWord, guessedWord
+      hint = getUncovered(
+        enteredLetter, hint, guessedWord
       );
     }
   }
   showFinalMessage();
 }
 
-function getRevealed(letter, maskedWord, guessedWord) {
-  revealedWord = [...maskedWord];
-  revealedWord.forEach((l, i) => {
-    if (guessedWord.charAt(i) === letter) {
-      revealedWord[i] = letter;
-    }
-  });
-  return ''.concat(...revealedWord);
+function getUncovered(letter, hint, guessedWord) {
+  let pos = guessedWord.indexOf(letter);
+  while (pos !== -1) {
+    hint = getReplacedAt(pos, letter, hint);
+    pos = guessedWord.indexOf(letter, pos + 1);
+  }
+  return hint;
+}
+
+function getReplacedAt(i, letter, word) {
+  return word.slice(0, i) + letter + word.slice(i + 1);
 }
 
 function getMasked(word) {
