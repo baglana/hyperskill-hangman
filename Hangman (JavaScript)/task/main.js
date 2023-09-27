@@ -20,18 +20,34 @@ function playGame(guessedWord) {
 
     showHint(hint);
     const enteredLetter = input(`Input a letter: `);
-    attempts--;
-    
-    if (guessedWord.includes(enteredLetter)){
-      uncoverLetter(
-        enteredLetter, hint, guessedWord
-      );
+
+    if (guessedWord.includes(enteredLetter)) {
+
+      const wasUncoveredBefore = hint.includes(enteredLetter);
+      if (wasUncoveredBefore) {
+        console.log('No improvements.');
+        attempts--;
+      } else {
+        uncoverLetter(
+          enteredLetter, hint, guessedWord
+        );
+      }
     } else {
       console.log('That letter doesn\'t appear in the word.');
+      attempts--;
+    }
+
+    const wordIsUncovered = !hint.includes('-');
+    if (wordIsUncovered) {
+      showHint(hint);
+      showWinMessage();
+      break;
     }
 
   }
-  showFinalMessage();
+  if (!attempts) {
+    showLostMessage();
+  }
 }
 
 function showHint(hint) {
@@ -52,6 +68,15 @@ function replaceAt(i, letter, word) {
 
 function getMasked(word) {
   return new Array(word.length).fill('-');
+}
+
+function showWinMessage() {
+  console.log('You guessed the word!');
+  console.log('You survived!');
+}
+
+function showLostMessage() {
+  console.log('\nYou lost!');
 }
 
 function showFinalMessage() {
