@@ -4,7 +4,41 @@
 const input = require('sync-input')
 
 greet();
-playGame(getRandomWord());
+let gamesWon = 0;
+let gamesLost = 0;
+
+let userChoice;
+do {
+  showMenu();
+  userChoice = input();
+  switch (userChoice) {
+    case 'play':
+      playGame(getRandomWord());
+      break;
+
+    case 'results':
+      showResults(gamesWon, gamesLost);
+      break;
+
+    case 'exit':
+      break;
+
+    default:
+      console.warn(`Unexpected input: ${userChoice}`);
+      break;
+  }
+} while (userChoice !== 'exit');
+
+function showResults(gamesWon, gamesLost) {
+  console.log(`You won: ${gamesWon} times.`);
+  console.log(`You lost: ${gamesLost} times.`)
+}
+
+function showMenu() {
+  console.log('Type "play" to play the game,'
+    + ' "results" to show the scoreboard,'
+    + ' and "exit" to quit:')
+}
 
 function getRandomWord() {
   const words = ['python', 'java', 'swift', 'javascript'];
@@ -48,12 +82,14 @@ function playGame(guessedWord) {
     const wordIsUncovered = !hint.includes('-');
     if (wordIsUncovered) {
       showWinMessage(guessedWord);
+      gamesWon++;
       break;
     }
 
   }
   if (!attempts) {
     showLostMessage();
+    gamesLost++;
   }
 }
 
