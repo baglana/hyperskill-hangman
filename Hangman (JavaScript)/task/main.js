@@ -1,6 +1,3 @@
-// Use 'input()' to input a line from the user
-// Use 'input(str)' to print some text before requesting input
-// You will need this in the following stages
 const input = require('sync-input')
 
 greet();
@@ -48,11 +45,11 @@ function getRandomWord() {
 
 function playGame(guessedWord) {
   let attempts = 8;
-  const hint = getMasked(guessedWord);
   const suggestedLetters = [];
+  const uncoveredLetters = [];
+  let hint = getMasked(guessedWord, uncoveredLetters);
 
   while (attempts > 0) {
-
     showHint(hint);
     const userInput = input(`Input a letter: `);
 
@@ -65,20 +62,20 @@ function playGame(guessedWord) {
 
     if (guessedWord.includes(enteredLetter)) {
 
-      const wasUncoveredBefore = hint.includes(enteredLetter);
+      const wasUncoveredBefore = uncoveredLetters.includes(enteredLetter);
       if (wasUncoveredBefore) {
         console.log('No improvements.');
         attempts--;
       } else {
-        uncoverLetter(
-          enteredLetter, hint, guessedWord
-        );
+        uncoveredLetters.push(enteredLetter);
       }
+
     } else {
       console.log('That letter doesn\'t appear in the word.');
       attempts--;
     }
 
+    hint = getMasked(guessedWord, uncoveredLetters);
     const wordIsUncovered = !hint.includes('-');
     if (wordIsUncovered) {
       showWinMessage(guessedWord);
@@ -115,23 +112,15 @@ function validateUserInput(input, suggestedLetters) {
 }
 
 function showHint(hint) {
-  console.log(`\n${hint.join('')}`);
+  console.log(`\n${hint}`);
 }
 
-function uncoverLetter(letter, hint, guessedWord) {
-  let pos = guessedWord.indexOf(letter);
-  while (pos !== -1) {
-    replaceAt(pos, letter, hint);
-    pos = guessedWord.indexOf(letter, pos + 1);
-  }
-}
-
-function replaceAt(i, letter, word) {
-  word[i] = letter;
-}
-
-function getMasked(word) {
-  return new Array(word.length).fill('-');
+function getMasked(word, uncoveredLetters) {
+  return [...word].reduce((hint, letter) => {
+    return hint.concat(
+      uncoveredLetters.includes(letter) ? letter : '-'
+    );
+  }, '');
 }
 
 function showWinMessage(word) {
@@ -141,10 +130,6 @@ function showWinMessage(word) {
 
 function showLostMessage() {
   console.log('\nYou lost!');
-}
-
-function showFinalMessage() {
-  console.log('\nThanks for playing!');
 }
 
 function greet() {
